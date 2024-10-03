@@ -6,17 +6,37 @@ const regd_users = express.Router();
 let users = [];
 
 const isValid = (username)=>{ //returns boolean
-//write code to check is the username is valid
+  return users.findIndex(u => u.username == username) === -1;
 }
 
 const authenticatedUser = (username,password)=>{ //returns boolean
-//write code to check if username and password match the one we have in records.
+  // @cariad
+  return users.findIndex(u => u.username == username && u.password == password) > -1;
 }
 
 //only registered users can login
 regd_users.post("/login", (req,res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  // @cariad
+  const { username, password } = req.body;
+
+  if (!username || !password)
+    return res.status(404).json({ message: "Username and password are required" });
+
+  if (!authenticatedUser(username, password))
+    return res.status(208).json({ message: "Invalid credentials" });
+
+  let accessToken = jwt.sign(
+    { data: password },
+    'access',
+    { expiresIn: 60 * 60 },
+  );
+
+  req.session.authorization = {
+    accessToken,
+    username,
+  }
+
+  return res.status(200).send("Successfully logged in");
 });
 
 // Add a book review
