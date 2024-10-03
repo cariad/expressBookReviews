@@ -39,10 +39,21 @@ regd_users.post("/login", (req,res) => {
   return res.status(200).send("Successfully logged in");
 });
 
+regd_users.delete("/auth/review/:isbn", (req, res) => {
+  // @cariad
+  const book = books[req.params.isbn];
+  if (!book) return res.status(404).json({ message: "Book not found" });
+  delete book.reviews[req.session.authorization.username];
+  return res.json({ message: "Review deleted" });
+});
+
 // Add a book review
 regd_users.put("/auth/review/:isbn", (req, res) => {
-  //Write your code here
-  return res.status(300).json({message: "Yet to be implemented"});
+  const book = books[req.params.isbn];
+  if (!book) return res.status(404).json({ message: "Book not found" });
+  book.reviews[req.session.authorization.username] = req.query.review;
+  // @cariad
+  return res.json({ message: "Review added" });
 });
 
 module.exports.authenticated = regd_users;
