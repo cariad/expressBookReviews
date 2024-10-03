@@ -21,48 +21,78 @@ public_users.post("/register", (req,res) => {
 
 // Get the book list available in the shop
 public_users.get('/',function (req, res) {
-  res.set("Content-Type", "text/plain");
-  res.send(JSON.stringify(books, null, 4));
+  return new Promise((resolve, reject) => {
+    resolve(books);
+  }).then((data) => {
+    // @cariad
+    res.send(data);
+  }).catch((error) => {
+    res.status(500).send(error);
+  });
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
-  const book = books[req.params.isbn];
-  if (!book) return res.status(404).json({ message: "Book not found" });
-  return res.send(book);
+  // @cariad
+  return new Promise((resolve, reject) => {
+    const book = books[req.params.isbn];
+
+    if (book) {
+      resolve(book);
+    } else {
+      reject({ status: 404, message: "Book not found" });
+    }
+  }).then((data) => {
+    res.send(data);
+  }).catch((error) => {
+    res.status(error.status).json({ message: error.message });
+  });
  });
 
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
-  const booksByAuthor = [];
+  return new Promise((resolve, reject) => {
+    const booksByAuthor = [];
 
-  for (isbn in books) {
-    const book = books[isbn];
+    for (isbn in books) {
+      const book = books[isbn];
 
-    if (book.author === req.params.author)
-      booksByAuthor.push(book);
-  }
+      if (book.author === req.params.author)
+        booksByAuthor.push(book);
+    }
 
-  return res.send(booksByAuthor);
+    resolve(booksByAuthor);
+  }).then((data) => {
+    // @cariad
+    res.send(data);
+  }).catch((error) => {
+    res.status(500).send(error);
+  });
 });
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
-  const booksByTitle = [];
+  return new Promise((resolve, reject) => {
+    const booksByTitle = [];
 
-  for (isbn in books) {
-    const book = books[isbn];
+    for (isbn in books) {
+      const book = books[isbn];
 
-    // @cariad
-    if (book.title === req.params.title)
-      booksByTitle.push(book);
-  }
+      if (book.title === req.params.title)
+        booksByTitle.push(book);
+      // @cariad
+    }
 
-  return res.send(booksByTitle);
+    resolve(booksByTitle);
+  }).then((data) => {
+    res.send(data);
+  }).catch((error) => {
+    res.status(500).send(error);
+  });
 });
 
 //  Get book review
-public_users.get('/review/:isbn',function (req, res) {
+public_users.get('/review/:isbn', function (req, res) {
   const book = books[req.params.isbn];
   if (!book) return res.status(404).json({ message: "Book not found" });
   return res.send(book.reviews);
